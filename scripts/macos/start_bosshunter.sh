@@ -108,12 +108,12 @@ if [ "$SKIP_CHROME" -eq 0 ]; then
 fi
 
 echo "[BossHunter] Starting the Browser Runtime..."
-if ! "${RUNNER[@]}" "${RUNNER_PREFIX[@]}" connect; then
+if ! "${RUNNER[@]}" ${RUNNER_PREFIX[@]+"${RUNNER_PREFIX[@]}"} connect; then
 	echo "[BossHunter] Warning: browser connection check failed with ${RUNNER[0]}; the workbench will still be opened." >&2
 fi
 
 echo "[BossHunter] Starting the local workbench..."
-cd "$REPO_ROOT" && nohup "${RUNNER[@]}" "${RUNNER_PREFIX[@]}" web --no-open >/dev/null 2>&1 &
+cd "$REPO_ROOT" && nohup "${RUNNER[@]}" ${RUNNER_PREFIX[@]+"${RUNNER_PREFIX[@]}"} web --no-open >/dev/null 2>&1 &
 
 WEB_READY=0
 for _ in $(seq 1 20); do

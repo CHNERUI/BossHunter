@@ -25,7 +25,10 @@ class MacOSLauncherTests(unittest.TestCase):
 		self.assertIn("web --no-open", text)
 		# Interpreter and prefix must expand as quoted arrays so that paths with
 		# spaces survive word splitting (review fix on PR for #236).
-		self.assertIn('"${RUNNER[@]}" "${RUNNER_PREFIX[@]}"', text)
+		# RUNNER_PREFIX is empty when `bosshunter` is on PATH; bash 3.2 (macOS /bin/bash) aborts
+		# on an empty-array expansion under `set -u`, so it must use the empty-safe form.
+		self.assertIn('"${RUNNER[@]}" ${RUNNER_PREFIX[@]+"${RUNNER_PREFIX[@]}"}', text)
+		self.assertNotIn('"${RUNNER[@]}" "${RUNNER_PREFIX[@]}"', text)
 		self.assertNotIn("$RUNNER $RUNNER_PREFIX", text)
 		self.assertNotIn("shellcheck disable=SC2086", text)
 		# Dedicated profile is mandatory: Chrome 136+ blocks debug ports on it.
