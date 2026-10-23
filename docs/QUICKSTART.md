@@ -87,6 +87,29 @@ bosshunter web
 - 如果 `brew install node@22` 后 `node` 仍不可用，按 brew 提示把 keg-only 路径加入 PATH（`export PATH="$(brew --prefix node@22)/bin:$PATH"`）。
 - 希望双击启动（专用 Chrome 调试实例 + 本地工作台），见 [macOS 一键启动器](macos-launcher.md)。
 
+### 更新到新版本
+
+项目目前没有 GitHub Release，更新就是拉取最新的 `main`、重新安装并重启。`config.yaml`、`data/` 和数据库文件都在 `.gitignore` 中，`git pull` 不会覆盖你的配置和数据；如果你改过源码，先提交或备份再拉取。
+
+先停止正在运行的 `bosshunter web`（终端里按 `Ctrl+C`），然后在仓库根目录执行：
+
+```bash
+git pull
+npm --prefix src/bosshunter/web/frontend ci
+npm --prefix src/bosshunter/web/frontend run build
+pip install -e .
+bosshunter --version
+bosshunter web
+```
+
+要点：
+
+- macOS / Linux 先执行 `source .venv/bin/activate`，保证 `pip` 装进同一个虚拟环境。
+- Windows 沿用上文的 `npm.cmd` 和 `.\.venv\Scripts\python.exe -m pip install -e .`，不需要改执行策略。
+- 前端有改动才需要重新构建；不确定时直接重新构建，只是多花一点时间。
+- 如果你是从自己的 fork 使用，先把上游同步到 fork 的 `main`（例如 `git fetch upstream && git merge upstream/main`），再执行上面的步骤。
+- 更新后仍出现配置字段报错时，对照 `config.example.yaml` 检查新增字段，不要直接覆盖自己的 `config.yaml`。
+
 ## 3. 开启 Chrome 远程调试
 
 Windows 桌面快捷方式已经完成远程调试启动，不需要再次运行下面的命令。如果采用手动启动，可在 Chrome 地址栏打开 `chrome://inspect/#remote-debugging`，启用 **Allow remote debugging**。
