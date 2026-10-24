@@ -189,6 +189,10 @@ JS_EXTRACT_LIST = """
 })()
 """
 
+# HR activity labels shown on a BOSS detail card, e.g. 在线 / 刚刚活跃 / 3日内活跃 / 2周内活跃 / 两天内活跃 / 半年前活跃.
+# One pattern feeds both the label extraction and the name clean-up in JS_EXTRACT_DETAIL (and the tests), so they cannot drift.
+HR_ACTIVE_PATTERN = "在线|刚刚活跃|今日活跃|本周活跃|本月活跃|半年前活跃|[0-9一二两三四五六七八九十]+(?:日|天|周|个?月)内活跃"
+
 JS_EXTRACT_DETAIL = """
 (() => {
     const info = {};
@@ -232,7 +236,7 @@ JS_EXTRACT_DETAIL = """
     const nameNode = bossCard?.querySelector('.name') || bossAttr?.querySelector('.name');
     const nameText = nameNode ? (nameNode.firstChild?.nodeType === 3 ? nameNode.firstChild.textContent : nameNode.textContent) : '';
     info.hr_name = (nameText || (cardLines[0] || '').split(/\\s+/)[0] || '').trim()
-        .replace(/在线|刚刚活跃|今日活跃|本周活跃|本月活跃|\\d+(?:日|周|月)内活跃|半年前活跃/g, '').trim();
+        .replace(new RegExp('__HR_ACTIVE_PATTERN__', 'g'), '').trim();
     info.hr_title = bossCard?.querySelector('.title')?.textContent?.trim()
         || bossAttr?.querySelector('.title')?.textContent?.trim()
         || (attrText.includes('·') ? attrText.split('·').pop().trim() : '');
@@ -241,13 +245,13 @@ JS_EXTRACT_DETAIL = """
     if (!info.hr_active) {
         // An online HR has no .boss-active-time node; the status sits in the boss card text.
         const bossText = `${bossCard?.innerText || ''} ${attrText}`;
-        const activeMatch = bossText.match(/在线|刚刚活跃|今日活跃|本周活跃|本月活跃|\\d+日内活跃|\\d+周内活跃|\\d+月内活跃|半年前活跃/);
+        const activeMatch = bossText.match(new RegExp('__HR_ACTIVE_PATTERN__'));
         info.hr_active = activeMatch ? activeMatch[0] : '';
     }
     info.url = window.location.pathname;
     return JSON.stringify(info);
 })()
-"""
+""".replace("__HR_ACTIVE_PATTERN__", HR_ACTIVE_PATTERN)
 
 JS_DETECT_COLLECTION_RISK = """
 (() => {
